@@ -48,6 +48,13 @@ if (app.Environment.IsProduction())
         }
 
         using var ws = await context.WebSockets.AcceptWebSocketAsync("wss");
+        var authentication = await ws.ReadObject<AuthenticateData>(CancellationToken.None);
+        if (authentication == null || authentication.Username != "abcd" || authentication.Password != "efgh")
+        {
+            await ws.CloseAsync(WebSocketCloseStatus.InternalServerError, null, CancellationToken.None);
+            return;
+        }
+
         while (true)
         {
             if (ws.State == System.Net.WebSockets.WebSocketState.Closed)
@@ -66,6 +73,12 @@ internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
 
+class AuthenticateData
+{
+    public string? Username { get; set; }
+    public string? Password { get; set; }
+}
+
 class MessageData
 {
     public string? Message { get; set; }
@@ -78,6 +91,7 @@ internal class MessageService : BackgroundService
         using var ws = new ClientWebSocket();
         ws.Options.AddSubProtocol("wss");
         await ws.ConnectAsync(new Uri("wss://websockettest.sliplane.app/ws"), stoppingToken);
+        await ws.WriteObject(new AuthenticateData { Username = "abcd", Password = "efgh" });
 
         await Task.Run(async () =>
         {
