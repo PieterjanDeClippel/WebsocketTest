@@ -10,11 +10,13 @@ public static class SocketExtensions
     {
         var buffer = new byte[512];
         byte[] fullMessage = [];
+        var length = 0;
         WebSocketReceiveResult result;
 
         do
         {
             result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+            length += result.Count;
             fullMessage = fullMessage.Concat(buffer).ToArray();
         }
         while (!result.EndOfMessage);
@@ -24,7 +26,7 @@ public static class SocketExtensions
             throw new WebSocketException("The websocket was closed");
         }
 
-        var message = Encoding.UTF8.GetString(fullMessage);
+        var message = Encoding.UTF8.GetString(fullMessage, 0, length);
         return message;
     }
 

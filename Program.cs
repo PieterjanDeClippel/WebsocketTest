@@ -53,7 +53,7 @@ if (app.Environment.IsProduction())
             if (ws.State == System.Net.WebSockets.WebSocketState.Closed)
                 break;
 
-            await ws.WriteMessage("Hello world");
+            await ws.WriteObject(new MessageData { Message = "Hello world" });
             await Task.Delay(1000);
         }
     });
@@ -64,6 +64,11 @@ app.Run();
 internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+}
+
+class MessageData
+{
+    public string? Message { get; set; }
 }
 
 internal class MessageService : BackgroundService
@@ -78,10 +83,10 @@ internal class MessageService : BackgroundService
         {
             while (true)
             {
-                var message = await ws.ReadMessage(stoppingToken);
+                var message = await ws.ReadObject<MessageData>(stoppingToken);
                 if (stoppingToken.IsCancellationRequested) break;
 
-                Console.WriteLine($"Received: {message}");
+                Console.WriteLine($"Received: {message.Message}");
             }
         });
     }
