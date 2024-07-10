@@ -54,7 +54,7 @@ if (app.Environment.IsProduction())
                 break;
 
             await ws.WriteObject(new MessageData { Message = "Hello world" });
-            await Task.Delay(1000);
+            await Task.Delay(1000 * 60 * 30);
         }
     });
 }
