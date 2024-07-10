@@ -41,6 +41,9 @@ app.Map("/ws", async (context) =>
     using var ws = await context.WebSockets.AcceptWebSocketAsync("wss");
     while (true)
     {
+        if (ws.State == System.Net.WebSockets.WebSocketState.Closed)
+            break;
+
         await ws.WriteMessage("Hello world");
         await Task.Delay(1000);
     }
